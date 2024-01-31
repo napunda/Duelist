@@ -1,6 +1,6 @@
-import LoginPage from "../pages/Login.page";
+import Auth from "../pages/Auth";
 
 export const login = {
   path: "/login",
-  element: <LoginPage />,
+  element: <Auth type="login" />,
 };

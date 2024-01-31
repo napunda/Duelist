@@ -1,4 +1,4 @@
-import NotFound from "../pages/NotFound.page";
+import NotFound from "../pages/NotFound";
 
 export const notFound = {
   path: "/404",

@@ -14,8 +14,13 @@ import { useDisclosure } from "@mantine/hooks";
 import classes from "./style.module.css";
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import useAuthStore from "../../states/AuthState";
 
 export function Header() {
+  const user = useAuthStore((state) => state.user);
+  const userName = useAuthStore((state) => state.userName);
+  const setName = useAuthStore((state) => state.setName);
+
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(false);
 
@@ -26,6 +31,15 @@ export function Header() {
 
   return (
     <Box pb={12}>
+      {user && <div>{user.name}</div>}
+      {userName && <div>{userName}</div>}
+
+      <input
+        title="user"
+        type="text"
+        value={userName}
+        onChange={(e) => setName(e.target.value)}
+      />
       <header className={classes.header}>
         <Container className={classes.container} size="lg">
           <Group justify="space-between" h="100%">
