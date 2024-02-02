@@ -19,7 +19,7 @@ export default function AuthPage({ type }: Readonly<AuthPageProps>) {
   }, [toggle, type]);
 
   return (
-    <Container size={400} mt="lg" pt={80}>
+    <Container size={400} pt={64}>
       <Paper radius="md" p="xl" withBorder>
         <Text size="lg" fw={500}>
           Welcome to Duelist, {currentType} with

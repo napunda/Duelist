@@ -1,12 +1,19 @@
 import { Stack, TextInput, PasswordInput, Group, Button } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import WarningDialog from "./WarningDialog";
+import { useDisclosure } from "@mantine/hooks";
+import { useNavigate } from "react-router-dom";
+import useAuthStore from "../../../states/AuthState";
+import { useEffect, useState } from "react";
+
 
 export default function LoginForm() {
+  const [opened, { close, open }] = useDisclosure(false);
+  const navigate = useNavigate();
   const form = useForm({
     initialValues: {
-      email: "",
-      name: "",
-      password: "",
+      email: "napunda@mail.com",
+      password: "napunda23",
     },
 
     validate: {
@@ -18,8 +25,33 @@ export default function LoginForm() {
     },
   });
 
+  const { login, loginError, isLoggedIn } = useAuthStore((state) => state);
+
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (loginError) {
+      setMessage(loginError);
+      open();
+    }
+  }, [loginError, open]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate("/todos");
+    }
+  }, [isLoggedIn, navigate]);
+
+  async function handleSubmit() {
+
+    const { email, password } = form.values;
+
+    await login({ email, password })
+
+  }
+
   return (
-    <form onSubmit={form.onSubmit(() => {})}>
+    <form onSubmit={form.onSubmit(handleSubmit)}>
       <Stack>
         <TextInput
           required
@@ -54,6 +86,7 @@ export default function LoginForm() {
           Login
         </Button>
       </Group>
+      <WarningDialog message={message} opened={opened} close={close} />
     </form>
   );
 }

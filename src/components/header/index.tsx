@@ -8,18 +8,19 @@ import {
   ScrollArea,
   rem,
   Container,
+  Text,
 } from "@mantine/core";
 import DuelistLogo from "../../assets/img/duelist.svg";
 import { useDisclosure } from "@mantine/hooks";
 import classes from "./style.module.css";
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { ActionToggle } from "./components/ActionToggle";
 import useAuthStore from "../../states/AuthState";
+import { TbLogout } from "react-icons/tb";
 
 export function Header() {
-  const user = useAuthStore((state) => state.user);
-  const userName = useAuthStore((state) => state.userName);
-  const setName = useAuthStore((state) => state.setName);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(false);
@@ -29,26 +30,19 @@ export function Header() {
     closeDrawer();
   }, [location, closeDrawer]);
 
+  const handLogout = useAuthStore((state) => state.logout);
+
   return (
     <Box pb={12}>
-      {user && <div>{user.name}</div>}
-      {userName && <div>{userName}</div>}
-
-      <input
-        title="user"
-        type="text"
-        value={userName}
-        onChange={(e) => setName(e.target.value)}
-      />
       <header className={classes.header}>
-        <Container className={classes.container} size="lg">
+        <Container className={classes.container} size="xl">
           <Group justify="space-between" h="100%">
             <Link to="/">
               <img
                 className={classes.logo}
                 src={DuelistLogo}
                 alt="Duelist Logo"
-                height={35}
+                height={40}
               />
             </Link>
             <Group h="100%" gap={0} visibleFrom="sm">
@@ -61,12 +55,26 @@ export function Header() {
             </Group>
 
             <Group visibleFrom="sm">
-              <Link to="/login">
-                <Button variant="default">Log in</Button>
-              </Link>
-              <Link to="/sign-up">
-                <Button>Sign up</Button>
-              </Link>
+              {isLoggedIn && (
+                <Button onClick={handLogout} variant="outline" color="red">
+                  <TbLogout size="20px" />
+                  <Text fw={500} ml="xs">
+                    Logout
+                  </Text>
+                </Button>
+              )}
+              {!isLoggedIn && (
+                <>
+                  <Link to="/login">
+                    <Button variant="default">Log in</Button>
+                  </Link>
+                  <Link to="/sign-up">
+                    <Button>Sign up</Button>
+                  </Link>
+                </>
+              )}
+
+              <ActionToggle />
             </Group>
 
             <Burger
@@ -100,12 +108,12 @@ export function Header() {
           <Divider my="sm" />
 
           <Group justify="center" grow pb="xl" px="md">
-            <Link style={{ textDecoration: "none" }} to="/login">
+            <Link to="/login">
               <Button fullWidth variant="default">
                 Log in
               </Button>
             </Link>
-            <Link style={{ textDecoration: "none" }} to="/sign-up">
+            <Link to="/sign-up">
               <Button fullWidth>Sign up</Button>
             </Link>
           </Group>

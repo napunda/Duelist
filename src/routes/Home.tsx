@@ -1,4 +1,4 @@
-import HomePage from "../pages/Home.page";
+import HomePage from "../pages/Home";
 
 export const home = {
   path: "/",

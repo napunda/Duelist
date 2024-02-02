@@ -1,37 +1,56 @@
 import { create } from "zustand";
+import { auth } from "../services/firebaseConnection";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { UserCredential } from "firebase/auth"; // Import UserCredential type
 
-interface UserProps {
-  id: string;
-  name: string;
+export interface Credentials {
   email: string;
+  password: string;
+}
+
+export interface UserProps {
+  email: string | null;
+  displayName: string | null;
+  uid: string;
 }
 
 interface AuthState {
   // State
-  token: string | null;
+  isLoggedIn: boolean;
+  loginError: string;
   user: UserProps | null;
-  userName: string;
 
   // Actions
-  login: (user: UserProps) => void;
+  login: (credentials: Credentials) => Promise<void>;
   logout: () => void;
-  setName: (userName: string) => void;
 }
 
 const useAuthStore = create<AuthState>((set) => ({
-  // State
-  token: null,
-  userName: "Napunda",
-  user: {
-    id: "1",
-    name: "Napunda",
-    email: "napunda@mail.com",
-  } as UserProps,
-
-  // Actions
-  login: (user) => set({ user }),
-  setName: (userName: string) => set({ userName }),
-  logout: () => set({ token: null, user: null }),
+  user: null,
+  isLoggedIn: !!auth.currentUser,
+  loginError: "",
+  login: async (credentials: Credentials) => {
+    const { email, password } = credentials;
+    try {
+      const userCredential: UserCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user: UserProps = {
+        email: userCredential.user.email,
+        displayName: userCredential.user.displayName,
+        uid: userCredential.user.uid,
+      };
+      set({ isLoggedIn: true, user });
+    } catch (e) {
+      set({ isLoggedIn: false, loginError: e.message });
+    }
+  },
+  logout: () => {
+    auth.signOut();
+    set({ isLoggedIn: false, user: null });
+  },
 }));
 
 export default useAuthStore;

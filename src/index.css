@@ -1,0 +1,17 @@
+.mantine-Checkbox-root {
+  display: flex !important;
+}
+
+.mantine-Checkbox-body {
+  flex-direction: row-reverse !important;
+  gap: 1rem !important;
+}
+.mantine-Checkbox-body label,
+.mantine-Checkbox-body input {
+  cursor: pointer !important;
+}
+
+a {
+  text-decoration: none !important;
+  color: inherit !important;
+}
