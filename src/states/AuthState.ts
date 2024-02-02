@@ -48,8 +48,8 @@ const useAuthStore = create<AuthState>((set) => ({
         uid: userCredential.user.uid,
       };
       set({ isLoggedIn: true, user });
-    } catch (e) {
-      set({ isLoggedIn: false, loginError: e.message });
+    } catch (e: unknown) {
+      set({ isLoggedIn: false, loginError: e ? (e as Error).message : "" });
     }
   },
   logout: () => {
@@ -69,8 +69,8 @@ const useAuthStore = create<AuthState>((set) => ({
         uid: userCredential.user.uid,
       };
       set({ isLoggedIn: true, user });
-    } catch (e) {
-      set({ isLoggedIn: false, loginError: e.message });
+    } catch (e: unknown) {
+      set({ isLoggedIn: false, loginError: e ? (e as Error).message : "" });
     }
   },
 }));
