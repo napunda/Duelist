@@ -12,14 +12,19 @@ import {
   Badge,
   Text,
   Grid,
-  useMantineTheme,
 } from "@mantine/core";
 import { DatePickerValue, DateTimePicker } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { IconCalendarTime } from "@tabler/icons-react";
 import classes from "./Todos.module.css";
 import { db } from "../../services/firebaseConnection";
-import { addDoc, collection, onSnapshot } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  query,
+  where,
+} from "firebase/firestore";
 import useAuthStore from "../../states/AuthState";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
@@ -27,7 +32,6 @@ import { format } from "date-fns";
 export default function Todos() {
   const user = useAuthStore((state) => state.user);
   const [loading, setLoading] = useState(false);
-
   interface TodoItem {
     id: string;
     todo: string;
@@ -41,20 +45,23 @@ export default function Todos() {
 
   useEffect(() => {
     setLoading(true);
-    const unsubscribe = onSnapshot(collection(db, "todos"), (querySnapshot) => {
-      const todos: TodoItem[] = [];
-      querySnapshot.forEach((doc) => {
-        todos.push({
-          id: doc.id,
-          ...doc.data(),
-        } as TodoItem);
-      });
-      setTodos(todos);
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      query(collection(db, "todos"), where("ownerUid", "==", user?.uid)),
+      (querySnapshot) => {
+        const todos: TodoItem[] = [];
+        querySnapshot.forEach((doc) => {
+          todos.push({
+            id: doc.id,
+            ...doc.data(),
+          } as TodoItem);
+        });
+        setTodos(todos);
+        setLoading(false);
+      }
+    );
 
     return () => unsubscribe();
-  }, []);
+  }, [user?.uid]);
 
   const form = useForm({
     initialValues: {

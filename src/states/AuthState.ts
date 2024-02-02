@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { auth } from "../services/firebaseConnection";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { UserCredential } from "firebase/auth"; // Import UserCredential type
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  type UserCredential,
+} from "firebase/auth";
 
 export interface Credentials {
   email: string;
@@ -22,6 +26,7 @@ interface AuthState {
 
   // Actions
   login: (credentials: Credentials) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => void;
 }
 
@@ -50,6 +55,23 @@ const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     auth.signOut();
     set({ isLoggedIn: false, user: null });
+  },
+  loginWithGoogle: async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const userCredential: UserCredential = await signInWithPopup(
+        auth,
+        provider
+      );
+      const user: UserProps = {
+        email: userCredential.user.email,
+        displayName: userCredential.user.displayName,
+        uid: userCredential.user.uid,
+      };
+      set({ isLoggedIn: true, user });
+    } catch (e) {
+      set({ isLoggedIn: false, loginError: e.message });
+    }
   },
 }));
 

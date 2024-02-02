@@ -1,11 +1,19 @@
 import { useToggle } from "@mantine/hooks";
-import { Text, Paper, Group, Divider, Container, Anchor } from "@mantine/core";
-import { SocialButton } from "../../components/SocialButton";
+import {
+  Text,
+  Paper,
+  Group,
+  Divider,
+  Container,
+  Anchor,
+  Button,
+} from "@mantine/core";
 import { FaGoogle, FaTwitter } from "react-icons/fa";
 import { useEffect } from "react";
 import LoginForm from "./components/LoginForm";
 import SignUpForm from "./components/SignUpForm";
 import { Link } from "react-router-dom";
+import useAuthStore from "../../states/AuthState";
 
 type AuthPageProps = {
   type: "login" | "register";
@@ -13,6 +21,8 @@ type AuthPageProps = {
 
 export default function AuthPage({ type }: Readonly<AuthPageProps>) {
   const [currentType, toggle] = useToggle(["login", "register"]);
+
+  const { loginWithGoogle } = useAuthStore((state) => state);
 
   useEffect(() => {
     toggle(type);
@@ -25,12 +35,17 @@ export default function AuthPage({ type }: Readonly<AuthPageProps>) {
           Welcome to Duelist, {currentType} with
         </Text>
         <Group grow mb="md" mt="md">
-          <SocialButton icon={FaGoogle} radius="xl">
+          <Button
+            variant="outline"
+            radius="xl"
+            leftSection={<FaGoogle />}
+            onClick={() => loginWithGoogle()}
+          >
             Google
-          </SocialButton>
-          <SocialButton icon={FaTwitter} radius="xl">
+          </Button>
+          <Button variant="outline" radius="xl" leftSection={<FaTwitter />}>
             Twitter
-          </SocialButton>
+          </Button>
         </Group>
         <Divider
           label="Or continue with email"
