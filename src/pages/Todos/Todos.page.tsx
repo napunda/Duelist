@@ -63,7 +63,11 @@ export default function Todos() {
     return () => unsubscribe();
   }, [user?.uid]);
 
-  const form = useForm({
+  const form = useForm<{
+    todo: string;
+    date: Date;
+    tags: string[];
+  }>({
     initialValues: {
       todo: "",
       date: new Date(),
@@ -120,8 +124,8 @@ export default function Todos() {
             label={<IconCalendarTime color="white" size={30} />}
             className={classes.datePicker}
             value={form.values.date}
-            onChange={(date: DatePickerValue) =>
-              form.setFieldValue("date", date)
+            onChange={(date: DatePickerValue | null) =>
+              form.setFieldValue("date", date ?? new Date())
             }
           />
         </Stack>
