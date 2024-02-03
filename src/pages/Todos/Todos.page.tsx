@@ -29,7 +29,6 @@ interface TodoItem {
 export default function Todos() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<TodoItem | null>(null);
   const user = useAuthStore((state) => state.user);
   const [openedDialog, { toggle: toggleDialog, close: closeDialog }] =
