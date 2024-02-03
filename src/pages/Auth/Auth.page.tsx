@@ -7,8 +7,11 @@ import {
   Container,
   Anchor,
   Button,
+  useMantineColorScheme,
 } from "@mantine/core";
-import { FaGoogle, FaTwitter } from "react-icons/fa";
+import { FaGithub } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+
 import { useEffect } from "react";
 import LoginForm from "./components/LoginForm";
 import SignUpForm from "./components/SignUpForm";
@@ -21,8 +24,9 @@ type AuthPageProps = {
 
 export default function AuthPage({ type }: Readonly<AuthPageProps>) {
   const [currentType, toggle] = useToggle(["login", "register"]);
+  const { loginWithGoogle, loginWithGithub } = useAuthStore((state) => state);
 
-  const { loginWithGoogle } = useAuthStore((state) => state);
+  const { colorScheme } = useMantineColorScheme();
 
   useEffect(() => {
     toggle(type);
@@ -36,15 +40,22 @@ export default function AuthPage({ type }: Readonly<AuthPageProps>) {
         </Text>
         <Group grow mb="md" mt="md">
           <Button
-            variant="outline"
+            variant="default"
             radius="xl"
-            leftSection={<FaGoogle />}
+            leftSection={<FcGoogle />}
             onClick={() => loginWithGoogle()}
           >
             Google
           </Button>
-          <Button variant="outline" radius="xl" leftSection={<FaTwitter />}>
-            Twitter
+          <Button
+            variant="default"
+            radius="xl"
+            leftSection={
+              <FaGithub color={colorScheme == "dark" ? "white" : "default"} />
+            }
+            onClick={() => loginWithGithub()}
+          >
+            Github
           </Button>
         </Group>
         <Divider

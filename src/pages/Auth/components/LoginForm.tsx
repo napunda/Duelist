@@ -6,14 +6,13 @@ import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../../states/AuthState";
 import { useEffect, useState } from "react";
 
-
 export default function LoginForm() {
   const [opened, { close, open }] = useDisclosure(false);
   const navigate = useNavigate();
   const form = useForm({
     initialValues: {
-      email: "napunda@mail.com",
-      password: "napunda23",
+      email: "",
+      password: "",
     },
 
     validate: {
@@ -43,11 +42,9 @@ export default function LoginForm() {
   }, [isLoggedIn, navigate]);
 
   async function handleSubmit() {
-
     const { email, password } = form.values;
 
-    await login({ email, password })
-
+    await login({ email, password });
   }
 
   return (

@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  GithubAuthProvider,
   type UserCredential,
 } from "firebase/auth";
 
@@ -27,6 +28,7 @@ interface AuthState {
   // Actions
   login: (credentials: Credentials) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  loginWithGithub: () => Promise<void>;
   logout: () => void;
 }
 
@@ -52,10 +54,7 @@ const useAuthStore = create<AuthState>((set) => ({
       set({ isLoggedIn: false, loginError: e ? (e as Error).message : "" });
     }
   },
-  logout: () => {
-    auth.signOut();
-    set({ isLoggedIn: false, user: null });
-  },
+
   loginWithGoogle: async () => {
     const provider = new GoogleAuthProvider();
     try {
@@ -72,6 +71,27 @@ const useAuthStore = create<AuthState>((set) => ({
     } catch (e: unknown) {
       set({ isLoggedIn: false, loginError: e ? (e as Error).message : "" });
     }
+  },
+  loginWithGithub: async () => {
+    const provider = new GithubAuthProvider();
+    try {
+      const userCredential: UserCredential = await signInWithPopup(
+        auth,
+        provider
+      );
+      const user: UserProps = {
+        email: userCredential.user.email,
+        displayName: userCredential.user.displayName,
+        uid: userCredential.user.uid,
+      };
+      set({ isLoggedIn: true, user });
+    } catch (e: unknown) {
+      set({ isLoggedIn: false, loginError: e ? (e as Error).message : "" });
+    }
+  },
+  logout: () => {
+    auth.signOut();
+    set({ isLoggedIn: false, user: null });
   },
 }));
 

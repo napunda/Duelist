@@ -1,55 +1,46 @@
-import {
-  Container,
-  Title,
-  Button,
-  TextInput,
-  Stack,
-  TagsInput,
-  Group,
-  Skeleton,
-  Box,
-  Card,
-  Badge,
-  Text,
-  Grid,
-} from "@mantine/core";
+import * as Mantine from "@mantine/core";
+import * as Firebase from "firebase/firestore";
+import { db } from "../../services/firebaseConnection";
 import { DatePickerValue, DateTimePicker } from "@mantine/dates";
 import { useForm } from "@mantine/form";
-import { IconCalendarTime } from "@tabler/icons-react";
-import classes from "./Todos.module.css";
-import { db } from "../../services/firebaseConnection";
 import {
-  addDoc,
-  collection,
-  onSnapshot,
-  query,
-  where,
-} from "firebase/firestore";
+  IconAlertCircle,
+  IconCalendarTime,
+  IconCheck,
+  IconDotsVertical,
+  IconTrash,
+} from "@tabler/icons-react";
+import classes from "./Todos.module.css";
 import useAuthStore from "../../states/AuthState";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import { useDisclosure } from "@mantine/hooks";
+
+interface TodoItem {
+  id: string;
+  todo: string;
+  date: string;
+  tags: string[];
+  owner: string;
+  ownerUid: string;
+  createdAt: Date;
+}
 
 export default function Todos() {
-  const user = useAuthStore((state) => state.user);
-  const [loading, setLoading] = useState(false);
-  interface TodoItem {
-    id: string;
-    todo: string;
-    date: string;
-    tags: string[];
-    owner: string;
-    ownerUid: string;
-    createdAt: Date;
-  }
-
   const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [selectedTodo, setSelectedTodo] = useState<TodoItem | null>(null);
+  const user = useAuthStore((state) => state.user);
+  const [openedDialog, { toggle: toggleDialog, close: closeDialog }] =
+    useDisclosure(false);
 
   useEffect(() => {
     setLoading(true);
-    const unsubscribe = onSnapshot(
-      query(
-        collection(db, "todos"),
-        where("owenerUid", "==", user?.uid),
+    const unsubscribe = Firebase.onSnapshot(
+      Firebase.query(
+        Firebase.collection(db, "todos"),
+        Firebase.where("owenerUid", "==", user?.uid)
       ),
       (querySnapshot) => {
         const todos: TodoItem[] = [];
@@ -80,14 +71,14 @@ export default function Todos() {
 
     validate: {
       todo: (val) =>
-        val.length <= 10 ? "Todo should include at least 10 characters" : null,
+        val.length <= 5 ? "Todo should include at least 5 characters" : null,
     },
   });
 
   function handleSubmit() {
     const { todo, date, tags } = form.values;
 
-    addDoc(collection(db, "todos"), {
+    Firebase.addDoc(Firebase.collection(db, "todos"), {
       todo,
       date: date.toISOString(),
       tags,
@@ -98,13 +89,21 @@ export default function Todos() {
     form.reset();
   }
 
+  async function deleteDoc(todo: TodoItem | null) {
+    closeDialog();
+    if (!todo) return;
+    await Firebase.deleteDoc(Firebase.doc(db, "todos", todo.id));
+    setSelectedTodo(null);
+  }
+
   return (
-    <Container>
-      <Title py="lg">My Todos</Title>
+    <Mantine.Container className={classes.todoWrapper}>
+      <Mantine.Title py="lg">My Todos</Mantine.Title>
       <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack>
-          <TextInput
+        <Mantine.Stack>
+          <Mantine.Textarea
             size="md"
+            rows={3}
             variant="filled"
             required
             label="Create a new task"
@@ -116,7 +115,7 @@ export default function Todos() {
             error={form.errors.todo}
             radius="md"
           />
-          <TagsInput
+          <Mantine.TagsInput
             size="md"
             variant="filled"
             label="Add some tags to your task"
@@ -126,71 +125,136 @@ export default function Todos() {
             splitChars={[",", " ", ";"]}
           />
 
+          <Mantine.Text size="md" fw={500} mb={-18}>
+            <label htmlFor="date-picker">Select date and time</label>
+          </Mantine.Text>
           <DateTimePicker
-            label={<IconCalendarTime color="white" size={30} />}
+            id="date-picker"
+            required
+            label={<IconCalendarTime size={30} />}
             className={classes.datePicker}
             value={form.values.date}
             onChange={(date: DatePickerValue | null) =>
               form.setFieldValue("date", date ?? new Date())
             }
           />
-        </Stack>
-        <Group justify="end" mt="md">
-          <Button type="submit" variant="outline" radius="xl">
+        </Mantine.Stack>
+        <Mantine.Group justify="end" mt="md">
+          <Mantine.Button type="submit" radius="xl">
             Add new todo
-          </Button>
-        </Group>
+          </Mantine.Button>
+        </Mantine.Group>
       </form>
-      <div>
-        {loading && (
-          <Grid>
-            <Grid.Col span={6}>
-              <Skeleton mt="xl" radius="xl" height={"212px"}></Skeleton>
-            </Grid.Col>
-            <Grid.Col span={6}>
-              <Skeleton mt="xl" radius="xl" height={"212px"}></Skeleton>
-            </Grid.Col>
-          </Grid>
-        )}
+      <Mantine.Divider mt="xl" mb="xl" />
+      <h2>My Todos list</h2>
+      {loading && (
+        <Mantine.Grid pt="xl">
+          <Mantine.Grid.Col span={{ base: 12, md: 6 }}>
+            <Mantine.Skeleton radius="md" height={172}></Mantine.Skeleton>
+          </Mantine.Grid.Col>
+          <Mantine.Grid.Col span={{ base: 12, md: 6 }}>
+            <Mantine.Skeleton radius="md" height={172}></Mantine.Skeleton>
+          </Mantine.Grid.Col>
+          <Mantine.Grid.Col span={{ base: 12 }}>
+            <Mantine.Skeleton radius="md" height={172}></Mantine.Skeleton>
+          </Mantine.Grid.Col>
+        </Mantine.Grid>
+      )}
+      {!loading && todos.length > 0 && (
+        <Mantine.Grid grow pt="xl">
+          {todos.map((todo) => (
+            <Mantine.Grid.Col key={todo.id} span="content">
+              <Mantine.Card padding="xl" radius="md" withBorder pos="relative">
+                <Mantine.Menu position="bottom-start">
+                  <Mantine.Menu.Target>
+                    <Mantine.ActionIcon
+                      pos="absolute"
+                      size="sm"
+                      variant="transparent"
+                      right={12}
+                      top={12}
+                    >
+                      <IconDotsVertical size={18} />
+                    </Mantine.ActionIcon>
+                  </Mantine.Menu.Target>
+                  <Mantine.Menu.Dropdown>
+                    <Mantine.MenuItem leftSection={<IconCheck />}>
+                      Mark as completed
+                    </Mantine.MenuItem>
+                    <Mantine.MenuItem
+                      leftSection={<IconTrash />}
+                      onClick={() => {
+                        setSelectedTodo(todo);
+                        toggleDialog();
+                      }}
+                    >
+                      Delete
+                    </Mantine.MenuItem>
+                  </Mantine.Menu.Dropdown>
+                </Mantine.Menu>
 
-        {!loading && todos.length > 0 && (
-          <>
-            <h2>My Todos list</h2>
-            <Grid>
-              {todos.map((todo) => (
-                <Grid.Col key={todo.id} span={6}>
-                  <Card padding="xl" radius="xl" mt="lg" withBorder>
-                    <Box>
-                      {todo.tags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          color="green"
-                          mr={12}
-                          p="sm"
-                          radius="xl"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </Box>
-                    <Box mt="md">
-                      <Text size="28px" fw={700}>
-                        {todo.todo}
-                      </Text>
-                      <Group mt="sm" justify="start" align="center">
-                        <IconCalendarTime size={20} />
-                        <Text fw="lighter">
-                          {format(todo.date, "dd 'of' MMMM 'at' HH:mm")}
-                        </Text>
-                      </Group>
-                    </Box>
-                  </Card>
-                </Grid.Col>
-              ))}
-            </Grid>
-          </>
-        )}
-      </div>
-    </Container>
+                <Mantine.Box>
+                  {todo.tags.map((tag) => (
+                    <Mantine.Badge
+                      key={tag}
+                      color="green"
+                      variant="outline"
+                      mr={12}
+                      p="sm"
+                      radius="xl"
+                    >
+                      {tag}
+                    </Mantine.Badge>
+                  ))}
+                </Mantine.Box>
+                <Mantine.Box mt="md">
+                  <Mantine.Text size="20px" fw={700}>
+                    {todo.todo}
+                  </Mantine.Text>
+                  <Mantine.Group mt="sm" justify="start" align="center">
+                    <IconCalendarTime size={20} />
+                    <Mantine.Text fw={300}>
+                      {format(todo.date, "dd 'of' MMMM 'at' HH:mm")}
+                    </Mantine.Text>
+                  </Mantine.Group>
+                </Mantine.Box>
+              </Mantine.Card>
+            </Mantine.Grid.Col>
+          ))}
+        </Mantine.Grid>
+      )}
+      <Mantine.Modal
+        opened={openedDialog}
+        withCloseButton
+        onClose={closeDialog}
+        size="md"
+        radius="md"
+        centered
+      >
+        <Mantine.Group align="center" justify="center">
+          <IconAlertCircle size={30} />
+          <Mantine.Text size="md" fw={700}>
+            This action will delete the curent todo!
+          </Mantine.Text>
+        </Mantine.Group>
+        <Mantine.Group align="center" justify="center" mt="xl">
+          <Mantine.Button
+            color="red"
+            variant="subtle"
+            onClick={() => closeDialog()}
+          >
+            Cancel
+          </Mantine.Button>
+          <Mantine.Button
+            variant="light"
+            onClick={() => {
+              deleteDoc(selectedTodo);
+            }}
+          >
+            Confirm
+          </Mantine.Button>
+        </Mantine.Group>
+      </Mantine.Modal>
+    </Mantine.Container>
   );
 }
