@@ -46,7 +46,7 @@ export default function Todos() {
   useEffect(() => {
     setLoading(true);
     const unsubscribe = onSnapshot(
-      query(collection(db, "todos"), where("ownerUid", "==", user?.uid)),
+      query(collection(db, "todos"), where("owenerUid", "==", user?.uid)),
       (querySnapshot) => {
         const todos: TodoItem[] = [];
         querySnapshot.forEach((doc) => {
