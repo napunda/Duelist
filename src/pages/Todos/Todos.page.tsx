@@ -22,6 +22,7 @@ import {
   addDoc,
   collection,
   onSnapshot,
+  orderBy,
   query,
   where,
 } from "firebase/firestore";
@@ -39,6 +40,7 @@ export default function Todos() {
     tags: string[];
     owner: string;
     ownerUid: string;
+    createdAt: Date;
   }
 
   const [todos, setTodos] = useState<TodoItem[]>([]);
@@ -46,7 +48,10 @@ export default function Todos() {
   useEffect(() => {
     setLoading(true);
     const unsubscribe = onSnapshot(
-      query(collection(db, "todos"), where("owenerUid", "==", user?.uid)),
+      query(
+        collection(db, "todos"),
+        where("owenerUid", "==", user?.uid),
+      ),
       (querySnapshot) => {
         const todos: TodoItem[] = [];
         querySnapshot.forEach((doc) => {
@@ -89,7 +94,9 @@ export default function Todos() {
       tags,
       owner: user?.displayName,
       owenerUid: user?.uid,
+      createdAt: new Date(),
     });
+    form.reset();
   }
 
   return (
@@ -136,7 +143,6 @@ export default function Todos() {
         </Group>
       </form>
       <div>
-        <h2>My Todos</h2>
         {loading && (
           <Grid>
             <Grid.Col span={6}>
@@ -148,33 +154,42 @@ export default function Todos() {
           </Grid>
         )}
 
-        {!loading && todos && (
-          <Grid>
-            {todos.map((todo) => (
-              <Grid.Col key={todo.id} span={6}>
-                <Card padding="xl" radius="xl" mt="lg" withBorder>
-                  <Box>
-                    {todo.tags.map((tag) => (
-                      <Badge key={tag} color="green" mr={12} p="sm" radius="xl">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </Box>
-                  <Box mt="md">
-                    <Text size="28px" fw={700}>
-                      {todo.todo}
-                    </Text>
-                    <Group mt="sm" justify="start" align="center">
-                      <IconCalendarTime size={20} />
-                      <Text fw="lighter">
-                        {format(todo.date, "dd 'of' MMMM 'at' HH:mm")}
+        {!loading && todos.length > 0 && (
+          <>
+            <h2>My Todos list</h2>
+            <Grid>
+              {todos.map((todo) => (
+                <Grid.Col key={todo.id} span={6}>
+                  <Card padding="xl" radius="xl" mt="lg" withBorder>
+                    <Box>
+                      {todo.tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          color="green"
+                          mr={12}
+                          p="sm"
+                          radius="xl"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </Box>
+                    <Box mt="md">
+                      <Text size="28px" fw={700}>
+                        {todo.todo}
                       </Text>
-                    </Group>
-                  </Box>
-                </Card>
-              </Grid.Col>
-            ))}
-          </Grid>
+                      <Group mt="sm" justify="start" align="center">
+                        <IconCalendarTime size={20} />
+                        <Text fw="lighter">
+                          {format(todo.date, "dd 'of' MMMM 'at' HH:mm")}
+                        </Text>
+                      </Group>
+                    </Box>
+                  </Card>
+                </Grid.Col>
+              ))}
+            </Grid>
+          </>
         )}
       </div>
     </Container>
