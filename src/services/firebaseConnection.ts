@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDiMPZHm-kLiGDtG_TMEo1okn4z1Nwes18",
-  authDomain: "duelist-d2beb.firebaseapp.com",
-  projectId: "duelist-d2beb",
-  storageBucket: "duelist-d2beb.appspot.com",
-  messagingSenderId: "932814771167",
-  appId: "1:932814771167:web:605780efbbe47eab812a6a",
+  apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTHDOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECTID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGEBUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGINGSENDERID,
+  appId: import.meta.env.VITE_FIREBASE_APPID,
 };
 
 const app = initializeApp(firebaseConfig);
