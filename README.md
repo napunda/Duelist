@@ -25,7 +25,7 @@ Duelist is a web application that helps you organize your daily tasks with simpl
 ## GitHub
 
 
-[GIT_HUB_URL>](https://github.com/napunda/Duelist/)
+[GIT_HUB_URL](https://github.com/napunda/Duelist/)
 
 
 ## License
