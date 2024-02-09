@@ -117,6 +117,7 @@ export function Header() {
               <Button fullWidth>Sign up</Button>
             </Link>
           </Group>
+          <ActionToggle />
         </ScrollArea>
       </Drawer>
     </Box>
