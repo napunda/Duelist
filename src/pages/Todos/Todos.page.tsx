@@ -7,6 +7,7 @@ import {
   IconAlertCircle,
   IconCalendarTime,
   IconCheck,
+  IconEdit,
   IconDotsVertical,
   IconTrash,
 } from "@tabler/icons-react";
@@ -22,6 +23,7 @@ interface TodoItem {
   date: string;
   tags: string[];
   owner: string;
+  completed?: boolean;
   ownerUid: string;
   createdAt: Date;
 }
@@ -61,11 +63,13 @@ export default function Todos() {
     todo: string;
     date: Date;
     tags: string[];
+    isEditing?: boolean;
   }>({
     initialValues: {
       todo: "",
       date: new Date(),
       tags: [],
+      isEditing: false,
     },
 
     validate: {
@@ -77,11 +81,19 @@ export default function Todos() {
   function handleSubmit() {
     const { todo, date, tags } = form.values;
 
+    if (form.values.isEditing) {
+      handleEditTodo(selectedTodo);
+      form.reset();
+      setSelectedTodo(null);
+      return;
+    }
+
     Firebase.addDoc(Firebase.collection(db, "todos"), {
       todo,
       date: date.toISOString(),
       tags,
       owner: user?.displayName,
+      completed: false,
       owenerUid: user?.uid,
       createdAt: new Date(),
     });
@@ -92,6 +104,34 @@ export default function Todos() {
     closeDialog();
     if (!todo) return;
     await Firebase.deleteDoc(Firebase.doc(db, "todos", todo.id));
+    setSelectedTodo(null);
+  }
+
+  function editTodo(todo: TodoItem | null) {
+    setSelectedTodo(todo);
+    if (!todo) return;
+    form.setValues({
+      todo: todo.todo,
+      date: new Date(todo.date),
+      tags: todo.tags,
+      isEditing: true,
+    });
+  }
+
+  async function handleEditTodo(todo: TodoItem | null) {
+    if (!todo) return;
+    await Firebase.updateDoc(Firebase.doc(db, "todos", todo.id), {
+      todo: form.values.todo,
+      date: form.values.date.toISOString(),
+      tags: form.values.tags,
+    });
+  }
+
+  async function markAsCompleted(todo: TodoItem | null) {
+    if (!todo) return;
+    await Firebase.updateDoc(Firebase.doc(db, "todos", todo.id), {
+      completed: true,
+    });
     setSelectedTodo(null);
   }
 
@@ -140,7 +180,7 @@ export default function Todos() {
         </Mantine.Stack>
         <Mantine.Group justify="end" mt="md">
           <Mantine.Button type="submit" radius="xl">
-            Add new todo
+            {form.values.isEditing ? "Save todo" : "Add new todo"}
           </Mantine.Button>
         </Mantine.Group>
       </form>
@@ -163,7 +203,12 @@ export default function Todos() {
         <Mantine.Grid grow pt="xl">
           {todos.map((todo) => (
             <Mantine.Grid.Col key={todo.id} span="content">
-              <Mantine.Card padding="xl" radius="md" withBorder pos="relative">
+              <Mantine.Card
+                padding="xl"
+                radius="md"
+                withBorder={!todo.completed}
+                pos="relative"
+              >
                 <Mantine.Menu position="bottom-start">
                   <Mantine.Menu.Target>
                     <Mantine.ActionIcon
@@ -177,7 +222,16 @@ export default function Todos() {
                     </Mantine.ActionIcon>
                   </Mantine.Menu.Target>
                   <Mantine.Menu.Dropdown>
-                    <Mantine.MenuItem leftSection={<IconCheck />}>
+                    <Mantine.MenuItem
+                      onClick={() => editTodo(todo)}
+                      leftSection={<IconEdit />}
+                    >
+                      Edit todo
+                    </Mantine.MenuItem>
+                    <Mantine.MenuItem
+                      onClick={() => markAsCompleted(todo)}
+                      leftSection={<IconCheck />}
+                    >
                       Mark as completed
                     </Mantine.MenuItem>
                     <Mantine.MenuItem
