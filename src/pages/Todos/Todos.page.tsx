@@ -18,10 +18,9 @@ import { format } from "date-fns";
 import { useDisclosure } from "@mantine/hooks";
 
 interface TodoItem {
-  id?: string;
+  id: string;
   todo: string;
   date: string;
-  completed: boolean;
   tags: string[];
   owner: string;
   completed?: boolean;
@@ -91,16 +90,13 @@ export default function Todos() {
 
     Firebase.addDoc(Firebase.collection(db, "todos"), {
       todo,
-      completed: false,
       date: date.toISOString(),
       tags,
-      owner: user?.displayName ?? "",
+      owner: user?.displayName,
       completed: false,
-      ownerUid: user?.uid ?? "",
+      owenerUid: user?.uid,
       createdAt: new Date(),
-    };
-
-    Firebase.addDoc(Firebase.collection(db, "todos"), newTodo);
+    });
     form.reset();
   }
 
