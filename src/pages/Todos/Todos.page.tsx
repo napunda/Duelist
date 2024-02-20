@@ -122,10 +122,10 @@ export default function Todos() {
     });
   }
 
-  async function markAsCompleted(todo: ITodoItem | null) {
+  async function toggleCompleted(todo: ITodoItem | null, completed: boolean) {
     if (!todo) return;
     await Firebase.updateDoc(Firebase.doc(db, "todos", todo.id), {
-      completed: true,
+      completed: completed,
     });
     setSelectedTodo(null);
   }
@@ -186,7 +186,7 @@ export default function Todos() {
         <TodoList
           todos={todos}
           editTodo={editTodo}
-          markAsCompleted={markAsCompleted}
+          toggleCompleted={toggleCompleted}
           setSelectedTodo={setSelectedTodo}
           toggleDialog={toggleDialog}
         />

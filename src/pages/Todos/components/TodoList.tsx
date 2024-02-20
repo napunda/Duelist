@@ -10,7 +10,7 @@ interface ITodoListProps extends ITodoProps {
 export default function TodoList({
   todos,
   editTodo,
-  markAsCompleted,
+  toggleCompleted,
   setSelectedTodo,
   toggleDialog,
 }: Readonly<ITodoListProps>) {
@@ -21,7 +21,7 @@ export default function TodoList({
           key={todo.id}
           todo={todo}
           editTodo={editTodo}
-          markAsCompleted={markAsCompleted}
+          toggleCompleted={toggleCompleted}
           setSelectedTodo={setSelectedTodo}
           toggleDialog={toggleDialog}
         />

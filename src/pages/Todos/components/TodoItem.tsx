@@ -27,17 +27,19 @@ interface TodoItemProps extends ITodoProps {
 export default function TodoItem({
   todo,
   editTodo,
-  markAsCompleted,
+  toggleCompleted,
   setSelectedTodo,
   toggleDialog,
 }: Readonly<TodoItemProps>) {
   return (
     <Grid.Col key={todo.id} span="content">
       <Card
+        title={todo.completed ? "Todo completed" : "In progress"}
         padding="xl"
         radius="md"
-        withBorder={!todo.completed}
+        withBorder
         pos="relative"
+        opacity={todo.completed ? 0.6 : 1}
       >
         <Menu position="bottom-start">
           <Menu.Target>
@@ -56,10 +58,10 @@ export default function TodoItem({
               Edit todo
             </MenuItem>
             <MenuItem
-              onClick={() => markAsCompleted(todo)}
+              onClick={() => toggleCompleted(todo, !todo.completed)}
               leftSection={<IconCheck />}
             >
-              Mark as completed
+              {todo.completed ? "Mark as uncompleted" : "Mark as completed"}
             </MenuItem>
             <MenuItem
               leftSection={<IconTrash />}
@@ -96,6 +98,11 @@ export default function TodoItem({
             <Text fw={300}>{format(todo.date, "dd 'of' MMMM 'at' HH:mm")}</Text>
           </Group>
         </Box>
+        {todo.completed && (
+          <Box pos="absolute" right={12} bottom={12}>
+            <IconCheck size={36} />
+          </Box>
+        )}
       </Card>
     </Grid.Col>
   );
